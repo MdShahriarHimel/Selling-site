@@ -1,0 +1,6 @@
+{
+  "name": "DigiVault — Premium Digital Subscriptions",
+  "description": "High-performance digital goods and subscription marketplace with instant checkout and cart system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
