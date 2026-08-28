@@ -155,9 +155,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         exit={{ opacity: 0, scale: 0.9 }}
                         className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-white/15 transition-all"
                       >
-                        {/* Icon */}
-                        <div className="w-11 h-11 rounded-xl bg-[#00ffc4]/10 border border-[#00ffc4]/20 flex items-center justify-center text-[#00ffc4] shrink-0">
-                          <IconRenderer name={item.product.iconName} className="w-5 h-5 stroke-[2]" />
+                        {/* Image / Icon Thumbnail */}
+                        <div className="w-12 h-12 rounded-xl bg-slate-900 border border-white/15 overflow-hidden flex items-center justify-center text-[#00ffc4] shrink-0">
+                          {item.product.imageUrl ? (
+                            <img
+                              src={item.product.imageUrl}
+                              alt={item.product.name}
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <IconRenderer name={item.product.iconName} className="w-5 h-5 stroke-[2]" />
+                          )}
                         </div>
 
                         {/* Info */}

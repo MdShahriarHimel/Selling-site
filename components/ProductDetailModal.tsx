@@ -77,9 +77,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </button>
 
           {/* Header */}
-          <div className="flex items-start gap-4 mb-6 pr-8">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#00ffc4] shrink-0 shadow-[0_0_25px_rgba(0,255,196,0.2)]">
-              <IconRenderer name={product.iconName} className="w-8 h-8 stroke-[2]" />
+          <div className="flex items-start gap-4 mb-5 pr-8">
+            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-[#00ffc4] shrink-0 shadow-[0_0_25px_rgba(0,255,196,0.2)]">
+              <IconRenderer name={product.iconName} className="w-7 h-7 stroke-[2]" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -107,6 +107,27 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Prominent Standard Product Picture Banner */}
+          {product.imageUrl && (
+            <div className="relative w-full aspect-[21/9] sm:aspect-[2.4/1] rounded-2xl overflow-hidden bg-black/50 border border-white/15 mb-5 shadow-lg">
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0d0e1c] via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-2.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none">
+                <span className="text-xs font-semibold text-white/90 bg-black/70 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10">
+                  Official License & Verified Access
+                </span>
+                <span className="text-xs font-mono text-cyan-300 bg-cyan-950/80 backdrop-blur-md px-3 py-1 rounded-lg border border-cyan-500/30">
+                  {product.warranty}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Price Banner */}
           <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-between mb-6">

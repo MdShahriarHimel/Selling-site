@@ -24,6 +24,7 @@ export interface Product {
   badge: ProductBadge;
   category: ProductCategory;
   iconName: string;
+  imageUrl?: string;
   shortDesc: string;
   description: string;
   features: string[];

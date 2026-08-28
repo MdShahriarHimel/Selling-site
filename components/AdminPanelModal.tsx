@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -28,7 +28,10 @@ import {
   Calendar,
   Save,
   ArrowUpDown,
-  Download
+  Download,
+  Image as ImageIcon,
+  Upload,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { Product, ProductCategory, ProductBadge, OrderReceipt } from '../types';
 import IconRenderer from './IconRenderer';
@@ -108,10 +111,45 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   const [formDeliveryType, setFormDeliveryType] = useState<'Instant Automated' | 'Panel Invite' | 'License Key'>('Instant Automated');
   const [formWarranty, setFormWarranty] = useState('12 Months Replacement Warranty');
   const [formStockCount, setFormStockCount] = useState<number>(50);
+  const [formImageUrl, setFormImageUrl] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Quick Preset Sample Images for One-Click Setting
+  const IMAGE_PRESETS = [
+    { name: 'Canva', url: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Spotify', url: 'https://images.unsplash.com/photo-1614680376593-902f749f7ffc?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Figma', url: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Netflix', url: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?auto=format&fit=crop&w=800&q=80' },
+    { name: 'JetBrains', url: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Windows 11', url: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Office 365', url: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=800&q=80' },
+    { name: 'CapCut', url: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=800&q=80' },
+    { name: 'ChatGPT/AI', url: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Adobe', url: 'https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=800&q=80' },
+  ];
 
   // Revenue & Stats calculations
   const totalRevenue = orders.reduce((sum, ord) => sum + (ord.total || 0), 0);
   const totalItemsSold = orders.reduce((sum, ord) => sum + (ord.items?.reduce((s, i) => s + i.qty, 0) || 0), 0);
+
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size exceeds 2MB limit. Please upload a smaller image or use an image URL.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (typeof event.target?.result === 'string') {
+        setFormImageUrl(event.target.result);
+        showToast('Image uploaded and optimized!');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,6 +205,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     setFormDeliveryType('Instant Automated');
     setFormWarranty('12 Months Replacement Warranty');
     setFormStockCount(100);
+    setFormImageUrl('');
   };
 
   const handleOpenEditModal = (p: Product) => {
@@ -185,6 +224,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     setFormDeliveryType(p.deliveryType);
     setFormWarranty(p.warranty);
     setFormStockCount(p.stockCount);
+    setFormImageUrl(p.imageUrl || '');
   };
 
   const handleAddFeature = () => {
@@ -217,6 +257,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
         badge: formBadge,
         category: formCategory,
         iconName: formIconName,
+        imageUrl: formImageUrl.trim() || undefined,
         shortDesc: formShortDesc.trim() || `${formName} subscription plan.`,
         description: formDescription.trim() || formShortDesc.trim() || `${formName} premium license with guaranteed warranty.`,
         features: formFeatures.length > 0 ? formFeatures : ['Instant automated digital delivery'],
@@ -511,8 +552,17 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                             </td>
                             <td className="py-3 px-4">
                               <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 rounded-lg bg-slate-800 border border-white/10 flex items-center justify-center text-cyan-400">
-                                  <IconRenderer name={prod.iconName} className="w-4 h-4" />
+                                <div className="w-10 h-10 rounded-lg bg-slate-900 border border-white/10 overflow-hidden flex-shrink-0 flex items-center justify-center text-cyan-400">
+                                  {prod.imageUrl ? (
+                                    <img
+                                      src={prod.imageUrl}
+                                      alt={prod.name}
+                                      referrerPolicy="no-referrer"
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <IconRenderer name={prod.iconName} className="w-4 h-4" />
+                                  )}
                                 </div>
                                 <div>
                                   <div className="flex items-center space-x-2">
@@ -804,6 +854,27 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Where are images stored? FAQ */}
+                <div className="p-6 rounded-2xl bg-slate-900/60 border border-white/10 space-y-3">
+                  <div className="flex items-center space-x-2.5 text-cyan-400 font-bold text-sm">
+                    <ImageIcon className="w-4 h-4" />
+                    <span>How Image Storage Works (Vercel vs NEON / Database)</span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    In modern web applications, images are stored on high-speed <strong>CDN media storage</strong> (such as Vercel public assets, Unsplash, Imgur, Cloudinary, AWS S3, or Supabase Storage), while your <strong>Database (Firestore or NEON PostgreSQL)</strong> securely stores the fast, indexed URL pointers & metadata.
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 text-[11px]">
+                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
+                      <strong className="text-white block mb-1">🖼️ Media / Images (Vercel / CDN)</strong>
+                      <span className="text-slate-400">Stores the actual image files, served at edge speed across the globe with low latency and automatic caching.</span>
+                    </div>
+                    <div className="p-3 rounded-xl bg-black/40 border border-white/5">
+                      <strong className="text-white block mb-1">🗄️ Database (Firestore / PostgreSQL)</strong>
+                      <span className="text-slate-400">Stores the image URL, product title, prices, inventory counts, and customer orders.</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -872,6 +943,94 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                       onChange={(e) => setFormDuration(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white focus:outline-none focus:border-cyan-400"
                     />
+                  </div>
+                </div>
+
+                {/* Product Picture / Image URL section */}
+                <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-slate-200 font-semibold flex items-center space-x-1.5">
+                      <ImageIcon className="w-4 h-4 text-cyan-400" />
+                      <span>Product Picture (Standard 16:9 Banner)</span>
+                    </label>
+                    <span className="text-[11px] text-slate-400">Direct Link or Upload from Device</span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Picture Preview Box */}
+                    <div className="w-full sm:w-40 aspect-video rounded-xl bg-slate-900 border border-white/15 overflow-hidden flex-shrink-0 flex items-center justify-center relative shadow-inner">
+                      {formImageUrl ? (
+                        <>
+                          <img
+                            src={formImageUrl}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                            onError={() => showToast('Image preview failed. Check URL.')}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setFormImageUrl('')}
+                            className="absolute top-1 right-1 p-1 rounded-md bg-black/70 text-rose-400 hover:text-rose-300"
+                            title="Remove picture"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center p-2 text-slate-500 flex flex-col items-center">
+                          <ImageIcon className="w-6 h-6 mb-1 opacity-50 text-cyan-400" />
+                          <span className="text-[10px]">No image set</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Inputs & Actions */}
+                    <div className="flex-1 w-full space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="relative flex-1">
+                          <LinkIcon className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                          <input
+                            type="url"
+                            placeholder="Paste image URL (Unsplash, Imgur, Supabase, Cloudinary, etc.)"
+                            value={formImageUrl}
+                            onChange={(e) => setFormImageUrl(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-white/10 rounded-xl text-white text-xs focus:outline-none focus:border-cyan-400 font-mono"
+                          />
+                        </div>
+
+                        {/* File Upload Button */}
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleImageFileUpload}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/30 rounded-xl font-semibold flex items-center space-x-1.5 shrink-0 transition-colors"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Upload File</span>
+                        </button>
+                      </div>
+
+                      {/* Quick Preset Buttons */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] text-slate-400 mr-1">Presets:</span>
+                        {IMAGE_PRESETS.map((preset) => (
+                          <button
+                            key={preset.name}
+                            type="button"
+                            onClick={() => setFormImageUrl(preset.url)}
+                            className="px-2 py-0.5 rounded bg-white/5 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-white/5 hover:border-cyan-500/30 text-[10px] transition-colors"
+                          >
+                            {preset.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
