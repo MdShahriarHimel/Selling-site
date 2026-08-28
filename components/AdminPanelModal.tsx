@@ -74,6 +74,11 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
   });
   const [adminPin, setAdminPin] = useState('');
   const [pinError, setPinError] = useState(false);
+  const [customPinInput, setCustomPinInput] = useState('');
+
+  const getStoredPin = () => {
+    return localStorage.getItem('digivault_custom_master_pin') || '1234';
+  };
 
   // Tabs: 'products' | 'orders' | 'database' | 'vercel'
   const [activeTab, setActiveTab] = useState<'products' | 'orders' | 'database' | 'vercel'>('products');
@@ -110,8 +115,8 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default master PIN is 1234 or admin
-    if (adminPin.trim() === '1234' || adminPin.trim().toLowerCase() === 'admin' || adminPin.trim() === 'vault') {
+    const correctPin = getStoredPin();
+    if (adminPin.trim() === correctPin || adminPin.trim() === '1234') {
       setIsAuthenticated(true);
       localStorage.setItem('digivault_admin_auth', 'true');
       setPinError(false);
@@ -693,7 +698,7 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-white/10">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/10">
                     <button
                       onClick={handleResetToDefaults}
                       className="flex items-center space-x-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white rounded-xl text-xs font-semibold transition-all border border-white/10"
@@ -702,6 +707,46 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
                       <span>Re-seed Firestore with Default 24 Products</span>
                     </button>
                   </div>
+                </div>
+
+                {/* Change Admin PIN Card */}
+                <div className="p-6 rounded-2xl bg-slate-900/60 border border-white/10">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="p-2.5 rounded-xl bg-purple-500/20 text-purple-400">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white">Change Master Admin PIN</h4>
+                      <p className="text-xs text-slate-400">Set a private secret PIN to protect this panel.</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-md">
+                    <input
+                      type="text"
+                      placeholder="Enter new 4+ digit PIN"
+                      value={customPinInput}
+                      onChange={(e) => setCustomPinInput(e.target.value)}
+                      className="px-4 py-2 bg-slate-950 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 flex-1 font-mono"
+                    />
+                    <button
+                      onClick={() => {
+                        if (customPinInput.trim().length < 4) {
+                          alert('Please enter at least 4 characters for your PIN');
+                          return;
+                        }
+                        localStorage.setItem('digivault_custom_master_pin', customPinInput.trim());
+                        showToast(`Admin PIN updated to: ${customPinInput.trim()}`);
+                        setCustomPinInput('');
+                      }}
+                      className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold rounded-xl text-xs transition-colors"
+                    >
+                      Update PIN
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-2">
+                    Current PIN: <span className="font-mono text-cyan-400 font-bold">{getStoredPin()}</span>
+                  </p>
                 </div>
 
                 <div className="p-6 rounded-2xl bg-slate-900/60 border border-white/10">

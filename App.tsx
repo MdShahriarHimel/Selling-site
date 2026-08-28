@@ -29,6 +29,7 @@ import {
   Flame,
   Clock,
   Layers,
+  Lock,
 } from 'lucide-react';
 
 import FluidBackground from './components/FluidBackground';
@@ -131,10 +132,25 @@ export const App: React.FC = () => {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Sync to localStorage
+  // Secret shortcut & URL parameter trigger for Admin Panel
   useEffect(() => {
-    localStorage.setItem('digivault_cart', JSON.stringify(cart));
-  }, [cart]);
+    // Check URL parameter: ?admin=true or ?vault=true or #admin
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true' || urlParams.get('vault') === 'true' || window.location.hash === '#admin') {
+      setIsAdminOpen(true);
+    }
+
+    // Keyboard shortcut: Press Ctrl+Shift+A (or Cmd+Shift+A) to open Admin Panel
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        setIsAdminOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('digivault_wishlist', JSON.stringify(wishlist));
@@ -367,26 +383,15 @@ export const App: React.FC = () => {
 
           {/* Action Icons: Search, Orders, Wishlist, Cart, Discord */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Admin Dashboard Button */}
-            <button
-              onClick={() => setIsAdminOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 text-xs font-semibold text-cyan-300 transition-all shadow-[0_0_12px_rgba(6,182,212,0.15)]"
-              title="Open Admin Control Panel"
-              data-cursor-text="ADMIN"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Admin Panel</span>
-            </button>
-
             {/* My Keys / Order Lookup Button */}
             <button
               onClick={() => setIsOrderLookupOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-xs font-semibold text-white/80 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-xs font-semibold text-white/80 transition-colors"
               title="Lookup My License Keys"
               data-cursor-text="KEYS"
             >
               <Package className="w-4 h-4 text-[#00ffc4]" />
-              <span>My Keys</span>
+              <span className="hidden sm:inline">My Keys</span>
             </button>
 
             {/* Wishlist Button */}
@@ -490,15 +495,6 @@ export const App: React.FC = () => {
                 className="block w-full py-3 font-heading font-bold text-2xl uppercase hover:text-[#00ffc4]"
               >
                 FAQ
-              </button>
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  setIsAdminOpen(true);
-                }}
-                className="block w-full py-3 font-mono text-sm text-cyan-300 uppercase font-bold"
-              >
-                ⚙️ Open Admin Panel
               </button>
               <button
                 onClick={() => {
@@ -1159,6 +1155,13 @@ export const App: React.FC = () => {
             <a href="https://discord.gg/digivault" target="_blank" rel="noreferrer" className="hover:text-white">
               Discord
             </a>
+            <button
+              onClick={() => setIsAdminOpen(true)}
+              className="text-white/20 hover:text-white/60 transition-colors p-1"
+              title="Staff Portal (Restricted)"
+            >
+              <Lock className="w-3 h-3" />
+            </button>
           </div>
 
           <p className="text-[11px] text-white/40">
